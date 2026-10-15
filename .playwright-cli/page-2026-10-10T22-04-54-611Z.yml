@@ -1,0 +1,16 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - paragraph [ref=e5]: TALLERALTO TONELAJE
+      - paragraph [ref=e6]: Órdenes, inventario, dinero y contabilidad. Una placa por orden, todo cuadra.
+    - paragraph [ref=e9]: Servicio · Inventario · Tesorería
+  - generic [ref=e10]:
+    - heading "Entrar al turno" [level=1] [ref=e11]
+    - paragraph [ref=e12]: admin@taller.test / admin123
+    - generic [ref=e13]:
+      - text: Correo
+      - textbox "Correo" [ref=e14]: admin@taller.test
+    - generic [ref=e15]:
+      - text: Contraseña
+      - textbox "Contraseña" [ref=e16]: admin123
+    - button "Abrir caja" [ref=e17] [cursor=pointer]

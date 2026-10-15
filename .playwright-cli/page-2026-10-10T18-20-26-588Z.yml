@@ -1,0 +1,53 @@
+- generic [ref=f2e2]:
+  - complementary [ref=f2e3]:
+    - generic [ref=f2e4]:
+      - button "☰" [ref=f2e5] [cursor=pointer]
+      - generic [ref=f2e6]: TALLER AT
+    - navigation [ref=f2e7]:
+      - link "📊 Dashboard" [ref=f2e8] [cursor=pointer]:
+        - /url: /dashboard
+      - button "🛠️ Servicio ▾" [ref=f2e10] [cursor=pointer]
+      - button "📦 Inventario ▾" [ref=f2e12] [cursor=pointer]
+      - button "💰 Ventas ▾" [ref=f2e14] [cursor=pointer]
+      - button "🏦 Tesorería ▾" [ref=f2e16] [cursor=pointer]
+      - link "📒 Contabilidad" [ref=f2e17] [cursor=pointer]:
+        - /url: /contabilidad
+      - button "⚙️ Config ▾" [ref=f2e19] [cursor=pointer]
+    - generic [ref=f2e20]:
+      - text: Administrador
+      - button "Salir" [ref=f2e22] [cursor=pointer]
+  - main [ref=f2e23]:
+    - heading "Nuevo usuario" [level=1] [ref=f2e24]
+    - generic [ref=f2e25]:
+      - heading "Nuevo usuario" [level=2] [ref=f2e26]
+      - generic [ref=f2e27]:
+        - text: Nombre
+        - 'textbox "Nombre Ej: Juan Pérez" [ref=f2e29]':
+          - /placeholder: "Ej: Juan Pérez"
+        - text: "Ej: Juan Pérez"
+      - generic [ref=f2e30]:
+        - text: Email
+        - 'textbox "Email Ej: juan@taller.bo (acceso al sistema)" [ref=f2e32]':
+          - /placeholder: "Ej: juan@taller.bo"
+        - text: "Ej: juan@taller.bo (acceso al sistema)"
+      - generic [ref=f2e33]:
+        - text: Contraseña
+        - 'textbox "Contraseña Ej: Taller123* (vacío = no cambiar al editar)" [ref=f2e35]':
+          - /placeholder: "Ej: Taller123*"
+        - text: "Ej: Taller123* (vacío = no cambiar al editar)"
+      - heading "Roles" [level=3] [ref=f2e36]
+      - generic [ref=f2e37]:
+        - checkbox "admin" [ref=f2e38]
+        - text: admin
+      - generic [ref=f2e39]:
+        - checkbox "caja" [ref=f2e40]
+        - text: caja
+      - generic [ref=f2e41]:
+        - checkbox "mecanico" [ref=f2e42]
+        - text: mecanico
+      - generic [ref=f2e43]:
+        - checkbox "contador" [ref=f2e44]
+        - text: contador
+      - button "Guardar" [ref=f2e45] [cursor=pointer]
+      - link "Volver" [ref=f2e46] [cursor=pointer]:
+        - /url: /usuarios

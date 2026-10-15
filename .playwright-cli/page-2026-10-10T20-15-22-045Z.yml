@@ -1,0 +1,48 @@
+- generic [ref=f1e2]:
+  - complementary [ref=f1e3]:
+    - generic [ref=f1e4]:
+      - button "☰" [ref=f1e5] [cursor=pointer]
+      - generic [ref=f1e6]: TALLER AT
+    - navigation [ref=f1e7]:
+      - link "📊 Dashboard" [ref=f1e8] [cursor=pointer]:
+        - /url: /dashboard
+      - button "🛠️ Servicio ▾" [ref=f1e10] [cursor=pointer]
+      - button "📦 Inventario ▾" [ref=f1e12] [cursor=pointer]
+      - button "💰 Ventas ▾" [ref=f1e14] [cursor=pointer]
+      - button "🏦 Tesorería ▾" [ref=f1e16] [cursor=pointer]
+      - link "📒 Contabilidad" [ref=f1e17] [cursor=pointer]:
+        - /url: /contabilidad
+      - button "⚙️ Config ▾" [ref=f1e19] [cursor=pointer]
+    - generic [ref=f1e20]:
+      - text: Administrador
+      - button "Salir" [ref=f1e22] [cursor=pointer]
+  - main [ref=f1e23]:
+    - heading "Dashboard" [level=1] [ref=f1e24]
+    - generic [ref=f1e25]:
+      - generic [ref=f1e26]:
+        - paragraph [ref=f1e27]: Servicio abiertas
+        - paragraph [ref=f1e28]: "1"
+      - generic [ref=f1e29]:
+        - paragraph [ref=f1e30]: Ventas hoy (facturado)
+        - paragraph [ref=f1e31]: "0.00"
+      - generic [ref=f1e32]:
+        - paragraph [ref=f1e33]: Stock bajo
+        - paragraph [ref=f1e34]: "0"
+      - generic [ref=f1e35]:
+        - paragraph [ref=f1e36]: Saldo bancos
+        - paragraph [ref=f1e37]: 5,000.00
+    - generic [ref=f1e38]:
+      - heading "Últimos servicios" [level=2] [ref=f1e39]
+      - table [ref=f1e40]:
+        - rowgroup [ref=f1e41]:
+          - row [ref=f1e42]:
+            - columnheader "Número" [ref=f1e43]
+            - columnheader "Cliente" [ref=f1e44]
+            - columnheader "Estado" [ref=f1e45]
+            - columnheader "Total" [ref=f1e46]
+        - rowgroup [ref=f1e47]:
+          - row [ref=f1e48]:
+            - cell "SRV-000001" [ref=f1e49]
+            - cell "Pedro Perez" [ref=f1e50]
+            - cell "registrada" [ref=f1e51]
+            - cell "340.00" [ref=f1e52]

@@ -1,0 +1,6 @@
+@extends('layouts.admin')
+@section('content')
+<div class="flex justify-between items-center mb-3"><h1 class="text-xl font-bold">Mayor por cuenta</h1><a href="/contabilidad" class="underline text-sm">Volver al diario</a></div>
+<form method="GET" action="/contabilidad/mayor" class="bg-white p-3 rounded shadow mb-3 flex gap-2 text-sm"><label>Cuenta <select name="cuenta" class="border p-1 rounded"><option value="">Todas</option>@foreach($cuentas as $c)<option value="{{ $c->id }}" @selected(request('cuenta') == $c->id)>{{ $c->codigo }} — {{ $c->nombre }}</option>@endforeach</select></label><button class="bg-slate-900 text-white px-3 py-1 rounded">Ver</button></form>
+<div class="bg-white p-4 rounded shadow"><table class="w-full text-sm"><thead><tr class="text-left border-b"><th>Cuenta</th><th>Debe</th><th>Haber</th><th>Saldo</th></tr></thead><tbody>@foreach($resumen as $r)<tr class="border-b"><td class="font-mono">{{ $r['codigo'] }} {{ $r['nombre'] }}</td><td class="text-right">{{ number_format($r['debe'], 2) }}</td><td class="text-right">{{ number_format($r['haber'], 2) }}</td><td class="text-right font-bold">{{ number_format($r['saldo'], 2) }}</td></tr>@endforeach</tbody></table></div>
+@endsection

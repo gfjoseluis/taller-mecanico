@@ -1,0 +1,114 @@
+- generic [ref=f1e2]:
+  - complementary [ref=f1e3]:
+    - generic [ref=f1e4]:
+      - button "Colapsar menú" [ref=f1e5] [cursor=pointer]: ☰
+      - generic [ref=f1e6]: TALLER AT
+    - navigation [ref=f1e8]:
+      - link "📊 Tablero" [ref=f1e9] [cursor=pointer]:
+        - /url: /dashboard
+      - button "🛠️ Servicio ▾" [ref=f1e11] [cursor=pointer]
+      - button "📦 Inventario ▾" [ref=f1e13] [cursor=pointer]
+      - button "💰 Ventas ▾" [ref=f1e15] [cursor=pointer]
+      - button "🏦 Tesorería ▾" [ref=f1e17] [cursor=pointer]
+      - link "📒 Contabilidad" [ref=f1e18] [cursor=pointer]:
+        - /url: /contabilidad
+      - link "📊 Reportes" [ref=f1e19] [cursor=pointer]:
+        - /url: /reportes
+      - button "⚙️ Config ▾" [ref=f1e21] [cursor=pointer]
+  - generic [ref=f1e22]:
+    - banner [ref=f1e23]:
+      - generic [ref=f1e24]: dashboard
+      - generic [ref=f1e25]:
+        - button "Notificaciones" [ref=f1e26] [cursor=pointer]: 🔔
+        - generic [ref=f1e27]: "2"
+      - button "Jose Luis Gayoso admin" [ref=f1e29] [cursor=pointer]:
+        - generic [ref=f1e30]: Jose Luis Gayoso
+        - generic [ref=f1e31]: admin
+    - main [ref=f1e32]:
+      - heading "Dashboard" [level=1] [ref=f1e33]
+      - generic [ref=f1e34]:
+        - generic [ref=f1e35]:
+          - paragraph [ref=f1e36]: Servicio abiertas
+          - paragraph [ref=f1e37]: "24"
+        - generic [ref=f1e38]:
+          - paragraph [ref=f1e39]: Ventas hoy (facturado)
+          - paragraph [ref=f1e40]: "0.00"
+        - generic [ref=f1e41]:
+          - paragraph [ref=f1e42]: Stock bajo
+          - paragraph [ref=f1e43]: "24"
+        - generic [ref=f1e44]:
+          - paragraph [ref=f1e45]: Saldo bancos
+          - paragraph [ref=f1e46]: 348,260.00
+        - generic [ref=f1e47]:
+          - paragraph [ref=f1e48]: Por cobrar (clientes deben)
+          - paragraph [ref=f1e49]: 1,800.00
+          - link "Ver lista" [ref=f1e50] [cursor=pointer]:
+            - /url: /por-cobrar
+        - generic [ref=f1e51]:
+          - paragraph [ref=f1e52]: Por pagar (debemos)
+          - paragraph [ref=f1e53]: "0.00"
+          - link "Ver lista" [ref=f1e54] [cursor=pointer]:
+            - /url: /por-pagar
+      - generic [ref=f1e55]:
+        - heading "Cobrado últimos 14 días" [level=2] [ref=f1e57]
+        - heading "Órdenes por estado" [level=2] [ref=f1e60]
+      - generic [ref=f1e62]:
+        - heading "Últimos servicios" [level=2] [ref=f1e63]
+        - table [ref=f1e64]:
+          - rowgroup [ref=f1e65]:
+            - row [ref=f1e66]:
+              - columnheader "Número" [ref=f1e67]
+              - columnheader "Cliente" [ref=f1e68]
+              - columnheader "Estado" [ref=f1e69]
+              - columnheader "Total" [ref=f1e70]
+          - rowgroup [ref=f1e71]:
+            - row [ref=f1e72]:
+              - cell "SRV-000110" [ref=f1e73]
+              - cell "Cli Srv" [ref=f1e74]
+              - cell "registrada" [ref=f1e75]
+              - cell "320.00" [ref=f1e76]
+            - row [ref=f1e77]:
+              - cell "SRV-U1791669258" [ref=f1e78]
+              - cell "Cli Cerr" [ref=f1e79]
+              - cell "cerrada" [ref=f1e80]
+              - cell "100.00" [ref=f1e81]
+            - row [ref=f1e82]:
+              - cell "SRV-T1791669258" [ref=f1e83]
+              - cell "Cli Edit" [ref=f1e84]
+              - cell "registrada" [ref=f1e85]
+              - cell "170.00" [ref=f1e86]
+            - row [ref=f1e87]:
+              - cell "SRV-M1791669257" [ref=f1e88]
+              - cell "Cli Din" [ref=f1e89]
+              - cell "cerrada-pagada" [ref=f1e90]
+              - cell "300.00" [ref=f1e91]
+            - row [ref=f1e92]:
+              - cell "SRV-D1791669256" [ref=f1e93]
+              - cell "Cli Deuda" [ref=f1e94]
+              - cell "cerrada-pagada" [ref=f1e95]
+              - cell "500.00" [ref=f1e96]
+            - row [ref=f1e97]:
+              - cell "SRV-T1791669255" [ref=f1e98]
+              - cell "Cli Trans" [ref=f1e99]
+              - cell "cerrada-pagada" [ref=f1e100]
+              - cell "200.00" [ref=f1e101]
+            - row [ref=f1e102]:
+              - cell "SRV-F1791669255" [ref=f1e103]
+              - cell "Cli crédito" [ref=f1e104]
+              - cell "cerrada-pendiente" [ref=f1e105]
+              - cell "300.00" [ref=f1e106]
+            - row [ref=f1e107]:
+              - cell "SRV-K1791669255" [ref=f1e108]
+              - cell "Cli Cont" [ref=f1e109]
+              - cell "cerrada-pagada" [ref=f1e110]
+              - cell "300.00" [ref=f1e111]
+            - row [ref=f1e112]:
+              - cell "SRV-C1791669254" [ref=f1e113]
+              - cell "Cli Cobro" [ref=f1e114]
+              - cell "cerrada-pagada" [ref=f1e115]
+              - cell "500.00" [ref=f1e116]
+            - row [ref=f1e117]:
+              - cell "SRV-000099" [ref=f1e118]
+              - cell "Cli T" [ref=f1e119]
+              - cell "registrada" [ref=f1e120]
+              - cell "200.00" [ref=f1e121]

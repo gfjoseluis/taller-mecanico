@@ -1,0 +1,10 @@
+- generic [ref=e2]:
+  - heading "Taller Alto Tonelaje" [level=1] [ref=e3]
+  - paragraph [ref=e4]: admin@taller.test / admin123
+  - generic [ref=e5]:
+    - text: Email
+    - textbox "Email" [ref=e6]: admin@taller.test
+  - generic [ref=e7]:
+    - text: Password
+    - textbox "Password" [ref=e8]: admin123
+  - button "Entrar" [ref=e9] [cursor=pointer]

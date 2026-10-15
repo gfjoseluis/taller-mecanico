@@ -1,0 +1,65 @@
+- generic [ref=f3e125]:
+  - complementary [ref=f3e126]:
+    - generic [ref=f3e127]:
+      - button "☰" [ref=f3e128] [cursor=pointer]
+      - generic [ref=f3e129]: TALLER AT
+    - navigation [ref=f3e130]:
+      - link "📊 Dashboard" [ref=f3e131] [cursor=pointer]:
+        - /url: /dashboard
+      - button "🛠️ Servicio ▾" [ref=f3e133] [cursor=pointer]
+      - button "📦 Inventario ▾" [ref=f3e135] [cursor=pointer]
+      - button "💰 Ventas ▾" [ref=f3e137] [cursor=pointer]
+      - button "🏦 Tesorería ▾" [ref=f3e139] [cursor=pointer]
+      - link "📒 Contabilidad" [ref=f3e140] [cursor=pointer]:
+        - /url: /contabilidad
+      - button "⚙️ Config ▾" [ref=f3e142] [cursor=pointer]
+    - generic [ref=f3e143]:
+      - text: Administrador
+      - button "Salir" [ref=f3e145] [cursor=pointer]
+  - main [ref=f3e146]:
+    - heading "servicios" [level=1] [ref=f3e147]
+    - paragraph [ref=f3e148]: Orden de servicio creada.
+    - generic [ref=f3e149]:
+      - generic [ref=f3e150]:
+        - heading "Servicio — Órdenes (una orden = un vehículo)" [level=2] [ref=f3e151]
+        - link "+ Nueva orden" [ref=f3e152] [cursor=pointer]:
+          - /url: /servicios/crear
+      - table [ref=f3e153]:
+        - rowgroup [ref=f3e154]:
+          - row [ref=f3e155]:
+            - columnheader "Número" [ref=f3e156]
+            - columnheader "Cliente" [ref=f3e157]
+            - columnheader "Vehículo" [ref=f3e158]
+            - columnheader "Estado" [ref=f3e159]
+            - columnheader "Total" [ref=f3e160]
+            - columnheader "Vínculo" [ref=f3e161]
+            - columnheader [ref=f3e162]
+        - rowgroup [ref=f3e163]:
+          - row [ref=f3e164]:
+            - cell "SRV-000021" [ref=f3e165]
+            - cell "Cliente Inv Test" [ref=f3e166]
+            - cell "INV-1001" [ref=f3e167]
+            - cell "registrada" [ref=f3e168]
+            - cell "560.00" [ref=f3e169]
+            - cell [ref=f3e170]
+            - cell [ref=f3e171]:
+              - link "PDF" [ref=f3e172] [cursor=pointer]:
+                - /url: /servicios/82/pdf
+              - link "Editar" [ref=f3e173] [cursor=pointer]:
+                - /url: /servicios/82/editar
+              - button "Cerrar" [ref=f3e174] [cursor=pointer]
+              - button "Anular" [ref=f3e175] [cursor=pointer]
+          - row [ref=f3e176]:
+            - cell "SRV-000001" [ref=f3e177]
+            - cell "Pedro Perez" [ref=f3e178]
+            - cell "2342-DFD" [ref=f3e179]
+            - cell "registrada" [ref=f3e180]
+            - cell "340.00" [ref=f3e181]
+            - cell [ref=f3e182]
+            - cell [ref=f3e183]:
+              - link "PDF" [ref=f3e184] [cursor=pointer]:
+                - /url: /servicios/20/pdf
+              - link "Editar" [ref=f3e185] [cursor=pointer]:
+                - /url: /servicios/20/editar
+              - button "Cerrar" [ref=f3e186] [cursor=pointer]
+              - button "Anular" [ref=f3e187] [cursor=pointer]

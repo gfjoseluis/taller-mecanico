@@ -19,8 +19,10 @@ class CobrarOrdenUseCase
         return DB::transaction(function () use ($ordenId, $medio, $bancoId, $ingresado) {
             $ot = WorkOrder::findOrFail($ordenId);
             $total = (float) $ot->total;
-            if ($medio->nombre() !== 'credito' && $ingresado < $total) {
-                throw new \DomainException('El monto no cubre el total. Ej: recibe '.number_format($total, 2).' o elige crédito.');
+            $adelantado = (float) $ot->payments()->sum('recibido');
+            $falta = max(0, $total - $adelantado);
+            if ($medio->nombre() !== 'credito' && $ingresado < $falta) {
+                throw new \DomainException('El monto no cubre lo que falta. Ej: recibe '.number_format($falta, 2).' o elige crédito.');
             }
             $cuenta = $medio->cuentaDestino($bancoId);
             if ($medio->nombre() === 'transferencia' && ! $cuenta) {
@@ -28,17 +30,17 @@ class CobrarOrdenUseCase
             }
             $pago = $ot->payments()->create([
                 'medio' => $medio->nombre(), 'bank_account_id' => $cuenta,
-                'total' => $total, 'recibido' => $medio->recibido($total, $ingresado),
-                'vuelto' => $medio->vuelto($total, $ingresado), 'saldo_pendiente' => $medio->deuda($total, $ingresado),
+                'total' => $total, 'recibido' => $medio->recibido($falta, $ingresado),
+                'vuelto' => $medio->vuelto($falta, $ingresado), 'saldo_pendiente' => $medio->deuda($falta, $ingresado),
                 'user_id' => auth()->id(),
             ]);
             $esCredito = $medio->nombre() === 'credito';
             $ot->update(['estado' => $esCredito ? 'cerrada-pendiente' : 'cerrada-pagada', 'cerrada_at' => now()]);
-            $ot->logs()->create(['user_id' => auth()->id(), 'accion' => 'cobrada', 'detalle' => ['medio' => $medio->nombre(), 'total' => $total]]);
+            $ot->logs()->create(['user_id' => auth()->id(), 'accion' => 'cobrada', 'detalle' => ['medio' => $medio->nombre(), 'total' => $total, 'adelantado' => $adelantado]]);
             if (! $esCredito) {
                 $this->dinero->registrar(['tipo' => 'entrada', 'cuenta_id' => $cuenta, 'monto' => $ingresado, 'motivo' => "Cobro orden {$ot->numero}", 'origen_tipo' => 'cobro', 'origen_id' => $pago->id]);
             }
-            $this->contable->ventaServicio((float) $ot->total_repuestos, (float) $ot->mano_obra, $medio->nombre(), $cuenta, $ot->numero);
+            $this->contable->ventaServicio((float) $ot->total_repuestos, (float) $ot->mano_obra, $medio->nombre(), $cuenta, $ot->numero, $adelantado, (float) $ot->descuento);
             return $pago;
         });
     }

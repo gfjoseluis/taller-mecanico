@@ -2,19 +2,23 @@
 
 namespace App\Livewire;
 
+use App\Application\Concerns\NormalizaVacios;
 use App\Application\UseCases\RegistrarMovimientoUseCase;
 use App\Models\Partner;
 use Livewire\Component;
 
 class MovimientoForm extends Component
 {
+    use NormalizaVacios;
     public string $tipo = 'salida'; // salida(gasto)|entrada|traspaso|aporte|retiro
     public $cuenta_id = null;
     public $cuenta_destino_id = null;
     public $partner_id = null;
     public $contra_id = null;
-    public float $monto = 0;
+    public $monto = null;
     public string $motivo = '';
+
+    public function updatedMonto() { $this->vaciosANulo('monto'); }
 
     protected $listeners = ['seleccionado' => 'onSeleccionado'];
 
@@ -28,6 +32,7 @@ class MovimientoForm extends Component
 
     public function guardar(RegistrarMovimientoUseCase $registrar)
     {
+        $this->vaciosANulo('monto');
         $this->validate([
             'tipo' => 'required|in:salida,entrada,traspaso,aporte,retiro',
             'cuenta_id' => 'required|exists:bank_accounts,id',
@@ -43,7 +48,12 @@ class MovimientoForm extends Component
         if (in_array($this->tipo, ['salida', 'entrada'])) {
             $this->validate(['contra_id' => 'required|exists:chart_accounts,id']);
         }
-        $registrar->ejecutar($this->tipo, $this->cuenta_id, $this->cuenta_destino_id, $this->partner_id, $this->contra_id, $this->monto, $this->motivo);
+        try {
+            $registrar->ejecutar($this->tipo, $this->cuenta_id, $this->cuenta_destino_id, $this->partner_id, $this->contra_id, $this->monto, $this->motivo);
+        } catch (\DomainException $e) {
+            $this->addError('monto', $e->getMessage());
+            return;
+        }
         session()->flash('ok', 'Movimiento registrado y saldo actualizado.');
         $this->redirect('/movimientos', navigate: true);
     }

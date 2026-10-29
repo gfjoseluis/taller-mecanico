@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Application\Concerns\NormalizaVacios;
 use App\Application\UseCases\AbonarOrdenUseCase;
 use App\Models\WorkOrder;
 use Livewire\Component;
@@ -9,10 +10,13 @@ use Livewire\Component;
 /** Abono a deuda del cliente (fiado/credito posterior). */
 class AbonoForm extends Component
 {
+    use NormalizaVacios;
     public WorkOrder $orden;
     public string $medio = 'efectivo';
     public $bank_account_id = null;
-    public float $monto = 0;
+    public $monto = 0;
+
+    public function updatedMonto() { $this->vaciosANulo('monto'); }
 
     protected $listeners = ['seleccionado' => 'onSeleccionado'];
 

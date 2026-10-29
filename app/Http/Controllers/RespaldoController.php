@@ -42,4 +42,16 @@ class RespaldoController extends Controller
         $r->restaurar($nombre, $req->password);
         return redirect('/respaldos')->with('ok', 'Restaurado. El sistema estuvo 1 minuto en mantenimiento.');
     }
+
+    public function subirYRestaurar(Request $req, RespaldoService $r)
+    {
+        abort_unless(auth()->user()->can('admin.purge'), 403);
+        $req->validate([
+            'archivo' => 'required|file|mimes:zip|max:512000',
+            'confirmacion' => 'required|in:RESTAURAR',
+            'password' => 'required',
+        ]);
+        $r->restaurarSubido($req->file('archivo'), $req->password);
+        return redirect('/respaldos')->with('ok', 'Restaurado desde archivo. El sistema estuvo 1 minuto en mantenimiento.');
+    }
 }

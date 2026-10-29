@@ -30,6 +30,25 @@ class CambiosTest extends TestCase
         $this->assertEquals(8, (float) $prod->fresh()->stock);
     }
 
+    public function test_servicio_sin_stock_bloquea_con_disponible(): void
+    {
+        $this->actingAs(User::first());
+        $cli = Client::create(['nombre' => 'Cli S0', 'nit_ci' => 'S0-'.time()]);
+        $veh = Vehicle::create(['client_id' => $cli->id, 'placa' => 'S00-'.random_int(100, 999).substr(microtime(true) * 10000, -4)]);
+        $prod = Product::create(['sku' => 'ST0-'.time(), 'nombre' => 'Caja Mecánica T', 'tipo' => 'repuesto', 'precio_venta' => 500, 'stock' => 0]);
+        Livewire::test('servicio-form')
+            ->set('client_id', $cli->id)
+            ->set('vehicle_id', $veh->id)
+            ->set('diagnostico', 'Mantenimiento')
+            ->set('mano_obra', 100)
+            ->set('usarInsumos', true)
+            ->set('lineas', [['product_id' => $prod->id, 'cantidad' => 1, 'precio' => 500]])
+            ->call('guardar')
+            ->assertHasErrors(['lineas']);
+        $this->assertEquals(0, (float) $prod->fresh()->stock);
+        $this->assertEquals(0, \App\Models\WorkOrder::where('client_id', $cli->id)->count());
+    }
+
     public function test_compra_suma_stock(): void
     {
         $this->actingAs(User::first());

@@ -22,13 +22,34 @@ class RegistroTest extends TestCase
     public function test_producto_guarda_con_sku(): void
     {
         $this->actingAs(User::first());
+        $cat = \App\Models\Category::firstOrCreate(['nombre' => 'Filtros T'], ['prefijo' => 'FLT', 'tipo' => 'repuesto']);
         Livewire::test('product-form')
             ->set('nombre', 'Filtro Prueba T')
-            ->set('tipo', 'repuesto')
+            ->set('category_id', $cat->id)
             ->set('precio_venta', 120)
             ->call('guardar')
             ->assertRedirect('/productos');
-        $this->assertDatabaseHas('products', ['nombre' => 'Filtro Prueba T']);
+        $this->assertDatabaseHas('products', ['nombre' => 'Filtro Prueba T', 'tipo' => 'repuesto']);
+    }
+
+    public function test_producto_nace_sin_stock_y_editar_no_lo_toca(): void
+    {
+        $this->actingAs(User::first());
+        $cat = \App\Models\Category::firstOrCreate(['nombre' => 'Filtros T'], ['prefijo' => 'FLT', 'tipo' => 'repuesto']);
+        $suf = time().random_int(100, 999);
+        Livewire::test('product-form')
+            ->set('nombre', 'Filtro Sin Stock T'.$suf)
+            ->set('category_id', $cat->id)
+            ->set('precio_venta', 120)
+            ->call('guardar')
+            ->assertRedirect('/productos');
+        $p = \App\Models\Product::where('nombre', 'Filtro Sin Stock T'.$suf)->firstOrFail();
+        $this->assertEquals(0, (float) $p->stock);
+        Livewire::test('product-form', ['id' => $p->id])
+            ->set('precio_venta', 150)
+            ->call('guardar')
+            ->assertRedirect('/productos');
+        $this->assertEquals(0, (float) $p->fresh()->stock);
     }
 
     public function test_paginas_crear_responden(): void

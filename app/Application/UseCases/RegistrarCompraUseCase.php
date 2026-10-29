@@ -12,9 +12,18 @@ class RegistrarCompraUseCase
 {
     public function __construct(private MovimientoService $dinero, private AsientoService $contable) {}
 
-    public function ejecutar(int $supplierId, ?int $bankId, string $tipo, string $glosa, array $lineas): Purchase
+    public function ejecutar(?int $supplierId, ?int $bankId, string $tipo, string $glosa, array $lineas): Purchase
     {
         return DB::transaction(function () use ($supplierId, $bankId, $tipo, $glosa, $lineas) {
+            if ($tipo === 'credito' && ! $supplierId) {
+                throw new \DomainException('A crédito el proveedor es obligatorio: la deuda necesita dueño.');
+            }
+            // Contado sin proveedor: compra local (ferretería, mercado) agrupada en genérico.
+            $esLocal = $supplierId === null;
+            $supplierId ??= \App\Models\Supplier::firstOrCreate(['nombre' => 'Compra local / mostrador'])->id;
+            if ($esLocal && trim($glosa) === '') {
+                throw new \DomainException('Anota dónde compraste. Ej: ferretería El Puente, filtros.');
+            }
             $total = (float) collect($lineas)->sum(fn ($l) => (float) ($l['cantidad'] ?? 0) * (float) ($l['costo'] ?? 0));
             $folio = 'CMP-'.str_pad((string) (Purchase::max('id') + 1), 6, '0', STR_PAD_LEFT);
             $c = Purchase::create([
@@ -22,6 +31,7 @@ class RegistrarCompraUseCase
                 'bank_account_id' => $tipo === 'contado' ? $bankId : null,
                 'tipo_pago' => $tipo, 'total' => $total,
                 'saldo' => $tipo === 'credito' ? $total : 0, 'glosa' => $glosa,
+                'estado' => $tipo === 'contado' ? 'pagada' : 'vigente',
             ]);
             foreach ($lineas as $l) {
                 if (empty($l['product_id'])) continue;

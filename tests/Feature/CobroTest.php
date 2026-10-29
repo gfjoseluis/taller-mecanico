@@ -27,14 +27,14 @@ class CobroTest extends TestCase
         $this->assertEquals(100, (float) $ot->payments()->first()->vuelto);
     }
 
-    public function test_cobro_crédito_deja_deuda(): void
+    public function test_queda_debiendo_cierra_a_credito(): void
     {
         $this->actingAs(User::first());
         $cli = Client::create(['nombre' => 'Cli crédito', 'nit_ci' => 'F-'.time()]);
         $veh = Vehicle::create(['client_id' => $cli->id, 'placa' => 'FIA-'.random_int(100, 999).substr(time(), -4)]);
         $ot = WorkOrder::create(['numero' => 'SRV-F'.time(), 'client_id' => $cli->id, 'vehicle_id' => $veh->id, 'estado' => 'registrada', 'mano_obra' => 300, 'total' => 300]);
         Livewire::test('cobro-form', ['id' => $ot->id])
-            ->set('medio', 'credito')->call('guardar')->assertRedirect('/servicios');
+            ->call('quedaDebiendo')->assertRedirect('/por-cobrar');
         $ot->refresh();
         $this->assertEquals('cerrada-pendiente', $ot->estado);
         $this->assertEquals(300, (float) $ot->payments()->first()->saldo_pendiente);
@@ -53,6 +53,6 @@ class CobroTest extends TestCase
         Livewire::test('cobro-form', ['id' => $ot->id])
             ->set('medio', 'transferencia')->set('bank_account_id', $b->id)->set('recibido', 200)
             ->call('guardar')->assertRedirect('/servicios');
-        $this->get("/servicios/{$ot->id}/recibo")->assertOk();
+        $this->get("/servicios/{$ot->id}/imprimir")->assertOk()->assertSee($ot->numero);
     }
 }

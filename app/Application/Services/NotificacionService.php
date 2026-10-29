@@ -18,19 +18,25 @@ class NotificacionService
             $lista = [];
             if ($u->can('productos.ver')) {
                 $bajo = Product::bajoStock()->count();
-                if ($bajo) $lista[] = ['icono' => '📦', 'titulo' => "{$bajo} repuestos con stock bajo", 'detalle' => 'Ej: revisa mínimos en Inventario.', 'url' => '/productos'];
+                if ($bajo) $lista[] = ['icono' => '📦', 'titulo' => "{$bajo} repuestos con stock bajo", 'detalle' => 'Ej: revisa mínimos en Inventario.', 'url' => '/productos?solo_bajo=1'];
             }
             if ($u->can('ots.ver')) {
-                $ab = WorkOrder::where('estado', 'registrada')->where('created_at', '<', now()->subDays(3))->count();
-                if ($ab) $lista[] = ['icono' => '🛠️', 'titulo' => "{$ab} órdenes llevan +3 días abiertas", 'detalle' => 'Ej: cerrar o cobrar.', 'url' => '/servicios'];
+                $ab = WorkOrder::where('estado', 'registrada')->where('created_at', '<', now()->subDays(7))->count();
+                if ($ab) $lista[] = ['icono' => '🛠️', 'titulo' => "{$ab} órdenes llevan +7 días abiertas", 'detalle' => 'Ej: vehículos olvidados, cerrar o cobrar.', 'url' => '/servicios?antiguas=1'];
             }
             if ($u->can('ventas.ver')) {
                 $n = WorkOrder::where('estado', 'cerrada-pendiente')->where('cerrada_at', '<', now()->subDays(15))->count();
-                if ($n) $lista[] = ['icono' => '💰', 'titulo' => "{$n} deudas de clientes con 15+ días", 'detalle' => 'Ej: abonar en Por cobrar.', 'url' => '/por-cobrar'];
+                if ($n) $lista[] = ['icono' => '💰', 'titulo' => "{$n} deudas de clientes con 15+ días", 'detalle' => 'Ej: abonar en Por cobrar.', 'url' => '/por-cobrar?mora=1'];
             }
             if ($u->can('compras.ver')) {
                 $n = Purchase::where('estado', 'vigente')->where('saldo', '>', 0)->where('created_at', '<', now()->subDays(7))->count();
                 if ($n) $lista[] = ['icono' => '🏦', 'titulo' => "{$n} deudas con importadoras de +7 días", 'detalle' => 'Ej: abonar en Por pagar.', 'url' => '/por-pagar'];
+            }
+            if ($u->can('config.editar')) {
+                $ultimo = app(\App\Application\Services\RespaldoService::class)->ultimo();
+                if (! $ultimo || $ultimo->lt(now()->subDays(2))) {
+                    $lista[] = ['icono' => '💾', 'titulo' => 'Sin respaldo reciente (+2 días)', 'detalle' => 'Ej: genera uno en Respaldos.', 'url' => '/respaldos'];
+                }
             }
             if ($u->can('contabilidad.ver')) {
                 $p = \App\Models\Periodo::where('gestion', now()->year)->where('mes', now()->month)->first();

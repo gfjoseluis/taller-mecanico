@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Application\Concerns\ManejaSeleccionados;
+use App\Application\Concerns\NormalizaVacios;
 use App\Application\UseCases\CrearOrdenUseCase;
 use App\Application\UseCases\EditarOrdenUseCase;
 use App\Application\UseCases\GuardarClienteUseCase;
@@ -17,12 +18,13 @@ use Livewire\Component;
 class ServicioForm extends Component
 {
     use ManejaSeleccionados;
+    use NormalizaVacios;
     public $editId = null;
-    public $parent_id = null;
     public $client_id = null;
     public $vehicle_id = null;
     public string $diagnostico = '';
-    public float $mano_obra = 0;
+    public $mano_obra = null;
+    public $descuento = null;
     /** Servicios a realizar (mano de obra por ítem). */
     public array $servicios = [];
     public bool $usarInsumos = false;
@@ -47,27 +49,26 @@ class ServicioForm extends Component
         // Edición de abierta: precarga todo (diagnóstico base + servicios parseados + líneas).
         if ($id) {
             $ot = WorkOrder::with('lineas')->findOrFail($id);
-            abort_if(in_array($ot->estado, ['cerrada', 'cerrada-pagada', 'cerrada-pendiente', 'anulada']), 422, 'Orden cerrada/anulada: use complementaria.');
+            abort_if(in_array($ot->estado, ['cerrada', 'cerrada-pagada', 'cerrada-pendiente', 'anulada']), 422, 'Orden cerrada o anulada: cree una orden nueva.');
             $this->editId = $ot->id;
             $this->client_id = $ot->client_id; $this->vehicle_id = $ot->vehicle_id;
             $this->diagnostico = explode("\n", $ot->diagnostico ?? '')[0] ?? '';
             $this->mano_obra = 0;
-            $this->servicios = [];
-            foreach (explode("\n", $ot->diagnostico ?? '') as $ln) {
-                if (preg_match('/^- (.*) \(([\d.]+)\)$/', trim($ln), $m)) $this->servicios[] = ['descripcion' => $m[1], 'precio' => (float) $m[2]];
+            $this->descuento = (float) $ot->descuento;
+            $this->servicios = $ot->lineas->where('tipo', 'servicio')->map(fn ($l) => ['descripcion' => (string) $l->descripcion, 'precio' => (float) $l->precio])->values()->toArray();
+            if (empty($this->servicios)) {
+                foreach (explode("\n", $ot->diagnostico ?? '') as $ln) {
+                    if (preg_match('/^- (.*) \(([\d.]+)\)$/', trim($ln), $m)) $this->servicios[] = ['descripcion' => $m[1], 'precio' => (float) $m[2]];
+                }
             }
-            $this->lineas = $ot->lineas->map(fn ($l) => ['product_id' => $l->product_id, 'cantidad' => (float) $l->cantidad, 'precio' => (float) $l->precio])->toArray();
+            $this->lineas = $ot->lineas->whereNotNull('product_id')->map(fn ($l) => ['product_id' => $l->product_id, 'cantidad' => (float) $l->cantidad, 'precio' => (float) $l->precio])->values()->toArray();
             $this->usarInsumos = ! empty($this->lineas);
             return;
         }
-        // Pre-selección cajero: ?cliente= &vehiculo= (Atender este vehículo) y ?complementa= (orden cerrada).
+        // Pre-selección cajero: ?cliente= y ?vehiculo= (Atender este vehículo).
         $q = request()->query();
         if (! empty($q['cliente'])) $this->client_id = (int) $q['cliente'];
         if (! empty($q['vehiculo'])) $this->vehicle_id = (int) $q['vehiculo'];
-        if (! empty($q['complementa'])) {
-            $p = WorkOrder::findOrFail((int) $q['complementa']);
-            $this->parent_id = $p->id; $this->client_id = $p->client_id; $this->vehicle_id = $p->vehicle_id;
-        }
     }
 
     public function onSeleccionado($modelo, $id, $indice = null)
@@ -100,6 +101,9 @@ class ServicioForm extends Component
     public function addServicio() { $this->servicios[] = ['descripcion' => '', 'precio' => 0]; }
     public function quitarServicio(int $i) { unset($this->servicios[$i]); $this->servicios = array_values($this->servicios); }
 
+    public function updatedManoObra() { $this->vaciosANulo('mano_obra'); }
+    public function updatedDescuento() { $this->vaciosANulo('descuento'); }
+
     public function getTotalServiciosProperty(): float
     {
         return (float) collect($this->servicios)->sum(fn ($s) => (float) ($s['precio'] ?? 0));
@@ -110,9 +114,14 @@ class ServicioForm extends Component
         return (float) collect($this->lineas)->sum(fn ($l) => (float) ($l['cantidad'] ?? 0) * (float) ($l['precio'] ?? 0));
     }
 
+    public function getSubtotalProperty(): float
+    {
+        return (float) $this->mano_obra + $this->totalServicios + $this->totalInsumos;
+    }
+
     public function getTotalProperty(): float
     {
-        return $this->mano_obra + $this->totalServicios + $this->totalInsumos;
+        return max(0, $this->subtotal - (float) $this->descuento);
     }
 
     public function guardarCliente(GuardarClienteUseCase $guardar)
@@ -141,22 +150,28 @@ class ServicioForm extends Component
 
     public function guardar(CrearOrdenUseCase $crear, EditarOrdenUseCase $editar)
     {
+        $this->vaciosANulo('mano_obra', 'descuento');
+        $this->servicios = collect($this->servicios)->map(fn ($s) => ['descripcion' => $s['descripcion'] ?? null, 'precio' => ($s['precio'] ?? null) === '' ? null : ($s['precio'] ?? null)])->toArray();
+        $this->lineas = collect($this->lineas)->map(fn ($l) => ['product_id' => $l['product_id'] ?? null, 'cantidad' => ($l['cantidad'] ?? null) === '' ? null : ($l['cantidad'] ?? null), 'precio' => ($l['precio'] ?? null) === '' ? null : ($l['precio'] ?? null)])->toArray();
         $this->validate([
             'client_id' => 'required|exists:clients,id',
             'vehicle_id' => 'required|exists:vehicles,id',
             'servicios.*.descripcion' => 'nullable',
             'servicios.*.precio' => 'nullable|numeric|min:0',
+            'descuento' => 'nullable|numeric|min:0',
         ]);
         try {
             if ($this->editId) {
-                $editar->ejecutar($this->editId, $this->diagnostico, $this->mano_obra, $this->servicios, $this->lineas);
+                $editar->ejecutar($this->editId, $this->diagnostico, (float) $this->mano_obra, $this->servicios, $this->lineas, (float) $this->descuento);
                 $msg = 'Orden actualizada (auditoría registrada).';
             } else {
-                $crear->ejecutar($this->client_id, $this->vehicle_id, $this->diagnostico, $this->mano_obra, $this->servicios, $this->lineas, $this->parent_id);
+                $crear->ejecutar($this->client_id, $this->vehicle_id, $this->diagnostico, (float) $this->mano_obra, $this->servicios, $this->lineas, null, (float) $this->descuento);
                 $msg = 'Orden de servicio creada.';
             }
         } catch (\DomainException $e) {
-            $this->addError('vehicle_id', $e->getMessage());
+            $msg = $e->getMessage();
+            $campo = str_contains($msg, 'Descuento') ? 'descuento' : (str_contains($msg, 'stock suficiente') ? 'lineas' : 'vehicle_id');
+            $this->addError($campo, $msg);
             return;
         }
         session()->flash('ok', $msg);

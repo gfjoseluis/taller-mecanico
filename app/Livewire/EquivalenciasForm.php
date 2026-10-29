@@ -13,12 +13,14 @@ class EquivalenciasForm extends Component
     public array $conceptos = [
         'ventas_repuestos' => 'Ventas de repuestos (Ej: 4.1)',
         'servicios' => 'Servicios de taller (Ej: 4.2)',
+        'descuentos' => 'Descuentos otorgados (Ej: 4.3)',
         'costo' => 'Costo de ventas (Ej: 5.1)',
         'inventario' => 'Mercadería en almacén (Ej: 1.2)',
         'caja' => 'Caja en efectivo (Ej: 1.1.01)',
         'bancos' => 'Cuentas de banco (Ej: 1.1.02)',
         'por_cobrar' => 'Lo que deben los clientes (Ej: 1.3)',
         'por_pagar' => 'Lo que debemos (Ej: 2.1)',
+        'adelantos' => 'Adelantos recibidos (Ej: 2.2)',
         'capital' => 'Capital de socios (Ej: 3.1)',
         'gasto' => 'Gastos operativos (Ej: 5.2)',
     ];

@@ -21,7 +21,13 @@ class ReportesTest extends TestCase
         foreach (['ventas', 'top', 'mecanicos', 'ganancia', 'bancos'] as $s) {
             $this->get("/reportes/{$s}")->assertOk();
         }
-        $this->get('/reportes/ventas?csv=1')->assertOk()
-            ->assertHeader('content-type', 'text/csv; charset=UTF-8');
+        foreach (['ventas', 'top', 'mecanicos', 'ganancia', 'bancos'] as $s) {
+            $csv = $this->get("/reportes/{$s}?csv=1")->assertOk()
+                ->assertHeader('content-type', 'text/csv; charset=UTF-8')->streamedContent();
+            // Punto y coma (Excel español) y encabezados reales por sección.
+            $this->assertStringContainsString(';', $csv);
+            $this->assertStringContainsString('reporte;'.$s, $csv);
+        }
+        $this->assertStringContainsString('Mes', $this->get('/reportes/ganancia?csv=1')->streamedContent());
     }
 }

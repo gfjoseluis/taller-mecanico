@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Application\Concerns\NormalizaVacios;
 use App\Application\UseCases\GuardarVehiculoUseCase;
 use App\Models\Client;
 use App\Models\Vehicle;
@@ -9,6 +10,7 @@ use Livewire\Component;
 
 class VehicleForm extends Component
 {
+    use NormalizaVacios;
     public $editId = null;
     public $client_id = null;
     public string $placa = '';
@@ -16,6 +18,8 @@ class VehicleForm extends Component
     public string $modelo = '';
     public string $chasis = '';
     public ?float $tonelaje = null;
+
+    public function updatedTonelaje() { $this->vaciosANulo('tonelaje'); }
 
     protected $listeners = ['seleccionado' => 'onSeleccionado'];
 

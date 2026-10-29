@@ -1,0 +1,22 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Letras locales (public/fonts): sin internet en el local. */
+@font-face {font-family: 'Barlow'; font-style: normal; font-weight: 400; font-display: swap; src: url('../fonts/barlow-400.woff2') format('woff2');}
+@font-face {font-family: 'Barlow'; font-style: normal; font-weight: 500; font-display: swap; src: url('../fonts/barlow-500.woff2') format('woff2');}
+@font-face {font-family: 'Barlow'; font-style: normal; font-weight: 600; font-display: swap; src: url('../fonts/barlow-600.woff2') format('woff2');}
+@font-face {font-family: 'Barlow'; font-style: normal; font-weight: 700; font-display: swap; src: url('../fonts/barlow-700.woff2') format('woff2');}
+@font-face {font-family: 'Barlow Condensed'; font-style: normal; font-weight: 500; font-display: swap; src: url('../fonts/barlow-condensed-500.woff2') format('woff2');}
+@font-face {font-family: 'Barlow Condensed'; font-style: normal; font-weight: 600; font-display: swap; src: url('../fonts/barlow-condensed-600.woff2') format('woff2');}
+@font-face {font-family: 'Barlow Condensed'; font-style: normal; font-weight: 700; font-display: swap; src: url('../fonts/barlow-condensed-700.woff2') format('woff2');}
+
+/* Tema taller (antes en el layout con CDN). */
+body {font-family: Barlow, system-ui, sans-serif;}
+.font-display, h1, h2 {font-family: "Barlow Condensed", "Arial Narrow", sans-serif; letter-spacing: .01em;}
+.num {font-family: "Barlow Condensed", sans-serif; font-variant-numeric: tabular-nums;}
+.bg-slate-900 {background-color: #1B1E24 !important;}
+.hover\:bg-slate-700:hover {background-color: #3A4048 !important;}
+.cinta {background: repeating-linear-gradient(-45deg, #F5B301 0 14px, #1B1E24 14px 28px);}
+.nav-act {border-left: 4px solid #F5B301; background: #3A4048;}
+:focus-visible {outline: 3px solid #F5B301; outline-offset: 1px;}

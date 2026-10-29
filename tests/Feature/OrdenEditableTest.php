@@ -35,7 +35,7 @@ class OrdenEditableTest extends TestCase
         $this->assertEquals('editada', $ot->logs()->latest()->first()->accion);
     }
 
-    public function test_cerrada_no_editable_pero_si_complementaria(): void
+    public function test_cerrada_no_editable_y_nueva_orden_independiente(): void
     {
         $this->actingAs(User::first());
         $cli = Client::create(['nombre' => 'Cli Cerr', 'nit_ci' => 'C-'.time()]);
@@ -44,8 +44,9 @@ class OrdenEditableTest extends TestCase
 
         // Cerrada: la vista de edición responde 422 (candado), la cerrada queda intacta.
         $this->get("/servicios/{$ot->id}/editar")->assertStatus(422);
-        // complementaria vía query
-        $this->get('/servicios/crear?complementa='.$ot->id)->assertOk();
+        // La cerrada se ve en detalle y lo adicional es una orden nueva independiente.
+        $this->get("/servicios/{$ot->id}")->assertOk()->assertSee($ot->numero);
+        $this->get('/servicios/crear')->assertOk();
         $this->assertEquals(100, (float) $ot->fresh()->total); // cerrada intacta
     }
 

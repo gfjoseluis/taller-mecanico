@@ -13,7 +13,7 @@
 <div class="bg-white p-4 rounded shadow"><h2 class="font-bold mb-2">Cobrado últimos 14 días</h2><canvas id="chVentas" height="120"></canvas></div>
 <div class="bg-white p-4 rounded shadow"><h2 class="font-bold mb-2">Órdenes por estado</h2><canvas id="chEstados" height="120"></canvas></div>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="/vendor/chartjs/chart.umd.min.js"></script>
 <script>
 new Chart(document.getElementById('chVentas'), {type: 'bar', data: {labels: @json($labels14), datasets: [{label: 'Bs cobrados', data: @json($datos14)}]}, options: {plugins: {legend: {display: false}}}});
 new Chart(document.getElementById('chEstados'), {type: 'doughnut', data: {labels: @json($estadosLabels), datasets: [{data: @json($estadosDatos)}]}});
@@ -21,6 +21,6 @@ new Chart(document.getElementById('chEstados'), {type: 'doughnut', data: {labels
 <div class="bg-white p-4 rounded shadow mt-4">
 <h2 class="font-bold mb-2">Últimos servicios</h2>
 <table class="w-full text-sm"><thead><tr class="text-left border-b"><th>Número</th><th>Cliente</th><th>Estado</th><th>Total</th></tr></thead>
-<tbody>@foreach($ultimas as $ot)<tr class="border-b"><td>{{ $ot->numero }}</td><td>{{ $ot->client->nombre ?? '' }}</td><td>{{ $ot->estado }}</td><td>{{ number_format($ot->total, 2) }}</td></tr>@endforeach</tbody></table>
+<tbody>@foreach($ultimas as $ot)<tr class="border-b"><td>{{ $ot->numero }}</td><td>{{ $ot->client->nombre ?? '' }}</td><td><x-estado :texto="$ot->estado" /></td><td>{{ number_format($ot->total, 2) }}</td></tr>@endforeach</tbody></table>
 </div>
 @endsection

@@ -76,6 +76,14 @@ class RespaldoService
         return $out;
     }
 
+    /** Fecha del último respaldo o null si nunca se hizo uno. */
+    public function ultimo(): ?\Carbon\Carbon
+    {
+        $lista = $this->lista();
+        if (empty($lista)) return null;
+        return \Carbon\Carbon::createFromFormat('Y-m-d H:i', $lista[0]['fecha']);
+    }
+
     public function ruta(string $nombre): string
     {
         if (! preg_match('/^respaldo-[\d\-_]+\.zip$/', $nombre)) abort(404);
@@ -87,17 +95,48 @@ class RespaldoService
     /** Restaura: verifica clave, guarda respaldo previo y bloquea 1 minuto. */
     public function restaurar(string $nombre, string $clave): void
     {
+        $this->verificarClave($clave);
+        $this->crear(); // respaldo de seguridad previo (si algo sale mal, se vuelve atrás)
+        $this->importar($this->ruta($nombre));
+    }
+
+    /** Restaura desde un archivo subido (USB): valida que sea respaldo del sistema. */
+    public function restaurarSubido(\Illuminate\Http\UploadedFile $archivo, string $clave): void
+    {
+        $this->verificarClave($clave);
+        if (strtolower($archivo->getClientOriginalExtension()) !== 'zip') {
+            abort(422, 'Archivo inválido: debe ser un .zip de respaldo del sistema.');
+        }
+        $tmp = sys_get_temp_dir().DIRECTORY_SEPARATOR.'sub-'.uniqid().'.zip';
+        $archivo->move(dirname($tmp), basename($tmp));
+        try {
+            $this->crear();
+            $this->importar($tmp);
+        } finally {
+            @unlink($tmp);
+        }
+    }
+
+    private function verificarClave(string $clave): void
+    {
         $u = auth()->user();
         if (! $u || ! Hash::check($clave, $u->password)) {
             abort(422, 'Contraseña incorrecta. Ej: escribe tu clave de acceso.');
         }
-        $ruta = $this->ruta($nombre);
-        $this->crear(); // respaldo de seguridad previo (si algo sale mal, se vuelve atrás)
+    }
+
+    /** Importa un zip verificado (contiene base.sql) con mantenimiento de 1 minuto. */
+    private function importar(string $rutaZip): void
+    {
+        $z = new ZipArchive;
+        if ($z->open($rutaZip) !== true) abort(422, 'Archivo dañado.');
+        if ($z->locateName('base.sql') === false) {
+            $z->close();
+            abort(422, 'No es respaldo del sistema: falta base.sql.');
+        }
         [$h, $port, $user, $p, $db] = $this->dsn();
         $tmp = sys_get_temp_dir().DIRECTORY_SEPARATOR.'rest-'.uniqid();
         mkdir($tmp);
-        $z = new ZipArchive;
-        if ($z->open($ruta) !== true) abort(422, 'Archivo dañado.');
         $z->extractTo($tmp);
         $z->close();
         Artisan::call('down', ['--render' => 'errors::503', '--retry' => 60]);

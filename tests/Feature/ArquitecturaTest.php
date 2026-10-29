@@ -46,7 +46,7 @@ class ArquitecturaTest extends TestCase
 
     public function test_casos_de_uso_cubren_operaciones(): void
     {
-        foreach (['CrearOrdenUseCase', 'EditarOrdenUseCase', 'CobrarOrdenUseCase', 'AbonarOrdenUseCase', 'AnularOrdenUseCase', 'RegistrarCompraUseCase', 'AnularCompraUseCase', 'AbonarCompraUseCase', 'RegistrarMovimientoUseCase', 'GuardarClienteUseCase', 'GuardarProductoUseCase', 'GuardarVehiculoUseCase', 'ArchivarUseCase'] as $uc) {
+        foreach (['CrearOrdenUseCase', 'EditarOrdenUseCase', 'CobrarOrdenUseCase', 'AnotarAdelantoUseCase', 'AbonarOrdenUseCase', 'AnularOrdenUseCase', 'GuardarProformaUseCase', 'ConvertirProformaUseCase', 'GuardarRecepcionUseCase', 'RegistrarCompraUseCase', 'AnularCompraUseCase', 'AbonarCompraUseCase', 'RegistrarMovimientoUseCase', 'GuardarClienteUseCase', 'GuardarProductoUseCase', 'GuardarVehiculoUseCase', 'ArchivarUseCase'] as $uc) {
             $this->assertTrue(class_exists("App\\Application\\UseCases\\{$uc}"), $uc);
         }
     }

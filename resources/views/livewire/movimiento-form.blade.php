@@ -1,4 +1,4 @@
-<div class="bg-white p-4 rounded shadow max-w-xl">
+<div class="bg-white p-4 rounded shadow w-full">
 <h2 class="font-bold mb-3">Nuevo movimiento de dinero</h2>
 <x-field label="Tipo" hint="Gasto resta · Entrada suma · Traspaso mueve entre cuentas · Aporte/Retiro es dinero de socios"><select wire:model.live="tipo" class="border p-2 rounded w-full mt-1"><option value="salida">Gasto / salida (Ej: materiales, pago crédito)</option><option value="entrada">Entrada / ajuste (Ej: corrección)</option><option value="traspaso">Traspaso entre cuentas</option><option value="aporte">Aporte de socio (Ej: socio mete 50.000)</option><option value="retiro">Retiro de socio (Ej: socio saca dinero)</option></select></x-field>
 <x-field label="Cuenta" hint="De dónde sale (o entra) el dinero"><livewire:searchable-select modelo="BankAccount" :value="$cuenta_id" :indice="'origen'" placeholder="Ej: Caja chica, Banco Unión..." /></x-field>
@@ -19,5 +19,5 @@
 <x-field label="Motivo" hint="Ej: Pago crédito repuestos, materiales escritorio"><input wire:model="motivo" placeholder="Ej: Pago crédito repuestos" class="border p-2 rounded w-full mt-1"></x-field>
 @error('motivo')<p class="text-red-600 text-xs">{{ $message }}</p>@enderror
 <button wire:click="guardar" wire:loading.attr="disabled" class="bg-slate-900 text-white px-4 py-2 rounded mt-3">Guardar movimiento</button>
-<a href="/movimientos" class="ml-2 underline text-sm">Volver</a>
+<x-accion href="/movimientos">Volver</x-accion>
 </div>

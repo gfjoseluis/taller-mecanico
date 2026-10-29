@@ -1,4 +1,4 @@
-<div class="bg-white p-4 rounded shadow max-w-2xl">
+<div class="bg-white p-4 rounded shadow w-full">
 <h2 class="font-bold mb-3">{{ $editId ? 'Editar' : 'Nuevo' }} cliente</h2>
 @include('components.client-fields', ['p' => ''])
 
@@ -13,9 +13,9 @@
 <button wire:click="quitarVehiculo({{ $i }})" class="text-red-600 text-sm">✕</button>
 </div>@endforeach
 @error('vehiculos')<p class="text-red-600 text-xs mt-1">{{ $message }}</p>@enderror
-<button wire:click="addVehiculo" class="underline text-sm mt-2">+ Agregar vehículo</button>
+<x-accion wire:click="addVehiculo" class="mt-2">+ Agregar vehículo</x-accion>
 
 <div class="mt-3"><button wire:click="guardar" wire:loading.attr="disabled" class="bg-slate-900 text-white px-4 py-2 rounded">Guardar</button>
 <span wire:loading class="text-sm text-gray-500 ml-2">Guardando...</span>
-<a href="/clientes" class="ml-2 underline text-sm">Volver</a></div>
+<x-accion href="/clientes">Volver</x-accion></div>
 </div>

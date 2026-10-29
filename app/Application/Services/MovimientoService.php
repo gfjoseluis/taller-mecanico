@@ -23,6 +23,9 @@ class MovimientoService
     {
         return DB::transaction(function () use ($d) {
             $cuenta = BankAccount::where('id', $d['cuenta_id'])->lockForUpdate()->firstOrFail();
+            if (in_array($d['tipo'], ['salida', 'retiro', 'traspaso'], true) && (float) $cuenta->saldo < (float) $d['monto']) {
+                throw new \DomainException('Sin dinero suficiente en '.$cuenta->nombre.' (tienes '.number_format($cuenta->saldo, 2).'). Ej: elige otra cuenta con dinero.');
+            }
             $mov = BankMovement::create([
                 'fecha' => $d['fecha'] ?? now()->toDateString(),
                 'tipo' => $d['tipo'],

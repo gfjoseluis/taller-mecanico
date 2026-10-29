@@ -23,6 +23,22 @@ class RespaldoPermisosTest extends TestCase
             ->assertSessionHasErrors('confirmacion');
     }
 
+    public function test_subir_restaurar_valida_archivo_y_permiso(): void
+    {
+        $caja = User::create(['name' => 'Caja Sub', 'email' => 'caja-sub@test.bo', 'password' => bcrypt('x')]);
+        $caja->assignRole(Role::findByName('caja'));
+        $this->actingAs($caja);
+        $this->post('/respaldos/subir-restaurar', ['confirmacion' => 'RESTAURAR', 'password' => 'x'])->assertForbidden();
+        $caja->forceDelete();
+
+        $this->actingAs(User::role('admin')->first());
+        $this->post('/respaldos/subir-restaurar', ['confirmacion' => 'RESTAURAR', 'password' => 'x'])->assertSessionHasErrors('archivo');
+        $this->post('/respaldos/subir-restaurar', [
+            'archivo' => \Illuminate\Http\UploadedFile::fake()->create('no-es.zip', 10, 'text/plain'),
+            'confirmacion' => 'OTRA', 'password' => 'x',
+        ])->assertSessionHasErrors('confirmacion');
+    }
+
     public function test_caja_no_abre_usuarios_ni_contabilidad(): void
     {
         $caja = User::create(['name' => 'Caja T', 'email' => 'caja-t@test.bo', 'password' => bcrypt('x')]);

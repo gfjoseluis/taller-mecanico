@@ -1,66 +1,101 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Taller Alto Tonelaje — Sistema de gestión (Laravel 10 + MySQL, en local)
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Órdenes de servicio (un vehículo por orden), inventario con SKU automático, compras,
+dinero (caja y bancos), contabilidad automática, reportes, respaldos y facturación
+electrónica SIAT (vía proveedor externo).
 
-## About Laravel
+## Requisitos
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- Laragon (Apache + MySQL + PHP 8.1+) o servidor equivalente con PHP 8.1, MySQL y Composer.
+- Node 18+ solo para compilar el diseño una vez (`npm run css`).
+- Red local para las terminales (ver `README_LAN.md`).
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Instalación nueva (PC del cliente)
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+```bat
+cd C:\laragon\www\taller-mecanico
+copy .env.example .env
+php artisan key:generate
+```
 
-## Learning Laravel
+Editar `.env`:
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+```ini
+APP_ENV=production
+APP_DEBUG=false
+APP_URL=http://IP-DEL-SERVIDOR
+DB_DATABASE=taller_mecanico
+DB_USERNAME=root
+DB_PASSWORD=
+QUEUE_CONNECTION=database
+```
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+Luego:
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+```bat
+composer install --no-dev
+php artisan migrate --force
+php artisan db:seed
+php artisan storage:link
+php artisan config:cache & php artisan route:cache & php artisan view:cache
+```
 
-## Laravel Sponsors
+Entrar con **admin@taller.test / admin123** y cambiar la clave. Crear las 4 cuentas,
+el plan de cuentas ya viene sembrado (incluye 2.2 Adelantos de clientes).
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+Servicios permanentes de Windows (Programador de tareas):
 
-### Premium Partners
+- Cola: `php artisan queue:work --tries=5` (facturación electrónica).
+- Respaldo 02:00 diario + `php artisan schedule:run` cada minuto.
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+## Desarrollo y pruebas (esta máquina)
 
-## Contributing
+```bat
+composer install
+copy .env.example .env
+php artisan migrate --seed
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Base separada de pruebas (no ensucia tu trabajo): crear `taller_mecanico_prueba`
+y copiar `.env` a `.env.testing` cambiando `DB_DATABASE` y `APP_ENV=testing`.
 
-## Code of Conduct
+```bat
+php artisan test            # suite completa (usa la base de prueba)
+npm run css                 # solo si cambias vistas o el tema
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## Uso por rol
 
-## Security Vulnerabilities
+- **Caja**: Servicio → Órdenes (crear, Cobrar con Total/Ya dio/Falta, Queda debiendo),
+  Clientes y Vehículos, Por cobrar (abonos), Movimientos.
+- **Mecánico**: ver órdenes y stock (sin dinero ni costos).
+- **Contador**: Contabilidad (diario, mayor, balance, resultados, asientos manuales,
+  equivalencias, cierre de mes), Reportes, Facturas.
+- **Admin**: todo + Usuarios, Roles, Config, Respaldos.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Reglas de oro: orden cerrada no se edita (se abre una nueva); el dinero nunca deja
+cuentas en negativo; el stock solo entra por compras; editar ficha jamás toca dinero
+ni stock; anular revierte en vez de borrar.
 
-## License
+## Respaldos
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+- Automático diario 02:00 en el servidor + botón manual en Respaldos.
+- **Descargar**: el navegador pregunta la carpeta (USB). Activa "preguntar dónde
+  guardar" en el navegador.
+- **Restaurar**: desde la lista o subiendo el `.zip` (valida que sea del sistema),
+  escribiendo `RESTAURAR` + tu clave de acceso. Guarda copia previa y pone el
+  sistema en mantenimiento 1 minuto.
+
+## Fallas típicas
+
+| Síntoma | Causa probable | Solución |
+|---|---|---|
+| Página en blanco / 500 | Caché vieja tras actualizar | `php artisan config:clear route:clear view:clear` |
+| Se ve sin diseño | Falta compilar | `npm run css` |
+| Factura queda en cola | Worker apagado | Iniciar `queue:work` |
+| Respaldo 02:00 no sale | Programador apagado | Revisar tarea `schedule:run` |
+| "Sin dinero suficiente" | Cuenta sin dinero | Cobrar a caja o hacer traspaso |
+| CSV abre raro en Excel | — | Ya sale con `;` y tildes; abrir directo |
+| Tests ensucian datos | Base real en uso | Usar `.env.testing` + `taller_mecanico_prueba` |
+
+Más detalle de red local: ver `README_LAN.md`.

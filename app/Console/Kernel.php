@@ -14,7 +14,7 @@ class Kernel extends ConsoleKernel
     {
         // Respaldo diario 2:00 am (base + archivos).
         $schedule->call(fn () => app(\App\Application\Services\RespaldoService::class)->crear())
-            ->dailyAt('02:00')->name('respaldo-diario');
+            ->dailyAt('20:00')->name('respaldo-diario');
     }
 
     /**

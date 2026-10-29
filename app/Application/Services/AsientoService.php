@@ -45,13 +45,34 @@ class AsientoService
     }
 
     /** Venta de servicio: entra dinero (o queda por cobrar) + reconoce venta. */
-    public function ventaServicio(float $totalRep, float $mano, string $medio, ?int $bankId, string $folio): void
+    public function ventaServicio(float $totalRep, float $mano, string $medio, ?int $bankId, string $folio, float $adelantado = 0, float $descuento = 0): void
     {
         $debito = $medio === 'credito' ? $this->cuenta('por_cobrar')->id : $this->bancoCuenta($bankId)->id;
-        $this->registrar("Venta servicio {$folio}", 'ventas', $folio, [
-            ['account_id' => $debito, 'debe' => $totalRep + $mano, 'haber' => 0],
+        $falta = $totalRep + $mano - $descuento - $adelantado;
+        $lineas = [
             ['account_id' => $this->cuenta('ventas_repuestos')->id, 'debe' => 0, 'haber' => $totalRep],
             ['account_id' => $this->cuenta('servicios')->id, 'debe' => 0, 'haber' => $mano],
+        ];
+        if ($falta > 0) {
+            array_unshift($lineas, ['account_id' => $debito, 'debe' => $falta, 'haber' => 0]);
+        }
+        if ($adelantado > 0) {
+            // El adelanto ya entró a caja: se compensa (debía el servicio, ahora lo entrega).
+            $lineas[] = ['account_id' => $this->cuenta('adelantos')->id, 'debe' => $adelantado, 'haber' => 0];
+        }
+        if ($descuento > 0) {
+            // Descuento otorgado: menor ingreso (nace deudor, resta en resultados).
+            $lineas[] = ['account_id' => $this->cuenta('descuentos')->id, 'debe' => $descuento, 'haber' => 0];
+        }
+        $this->registrar("Venta servicio {$folio}", 'ventas', $folio, $lineas);
+    }
+
+    /** Adelanto en orden abierta: entra dinero pero aún no hay venta (se debe el servicio). */
+    public function adelantoCliente(float $monto, ?int $bankId, string $folio): void
+    {
+        $this->registrar("Adelanto cliente {$folio}", 'ventas', $folio, [
+            ['account_id' => $this->bancoCuenta($bankId)->id, 'debe' => $monto, 'haber' => 0],
+            ['account_id' => $this->cuenta('adelantos')->id, 'debe' => 0, 'haber' => $monto],
         ]);
     }
 

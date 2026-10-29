@@ -27,7 +27,8 @@ class GlosarioTest extends TestCase
     public function test_producto_editar_no_pisa_costo(): void
     {
         $this->actingAs(User::first());
-        $prod = Product::create(['sku' => 'NOC-'.time(), 'nombre' => 'NoPisa T', 'tipo' => 'repuesto', 'precio_compra' => 80, 'precio_venta' => 100, 'stock' => 0]);
+        $cat = \App\Models\Category::firstOrCreate(['nombre' => 'Filtros T'], ['prefijo' => 'FLT', 'tipo' => 'repuesto']);
+        $prod = Product::create(['sku' => 'NOC-'.time().random_int(100, 999), 'nombre' => 'NoPisa T', 'tipo' => 'repuesto', 'category_id' => $cat->id, 'precio_compra' => 80, 'precio_venta' => 100, 'stock' => 0]);
         Livewire::test('product-form', ['id' => $prod->id])
             ->set('precio_venta', 150)
             ->call('guardar')

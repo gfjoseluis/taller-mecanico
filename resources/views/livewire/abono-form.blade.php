@@ -1,4 +1,4 @@
-<div class="bg-white p-4 rounded shadow max-w-xl">
+<div class="bg-white p-4 rounded shadow w-full">
 <h2 class="font-bold mb-1">Abono — Orden {{ $orden->numero }}</h2>
 <p class="text-sm text-gray-600 mb-2">{{ $orden->client->nombre ?? '' }} · {{ $orden->vehicle->placa ?? '' }}</p>
 <p class="text-2xl mb-3">Deuda pendiente: <strong>{{ number_format($this->pendiente, 2) }} Bs</strong></p>
@@ -13,5 +13,5 @@
 <x-field label="Monto del abono (Bs)" hint="Ej: 200.00 (máximo la deuda)"><input wire:model.live="monto" type="number" step="0.01" min="0.01" placeholder="Ej: 200.00" class="border p-2 rounded w-full mt-1"></x-field>
 @error('monto')<p class="text-red-600 text-xs">{{ $message }}</p>@enderror
 <button wire:click="guardar" wire:loading.attr="disabled" class="bg-slate-900 text-white px-4 py-2 rounded mt-3">Registrar abono</button>
-<a href="/por-cobrar" class="ml-2 underline text-sm">Volver</a>
+<x-accion href="/por-cobrar">Volver</x-accion>
 </div>

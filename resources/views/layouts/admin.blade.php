@@ -2,25 +2,7 @@
 <html lang="es">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{{ $title ?? 'Taller' }} - Taller Alto Tonelaje</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<script>
-tailwind.config = {theme: {extend: {
-  colors: {grafito: {DEFAULT: '#1B1E24', soft: '#3A4048'}, humo: '#EDEFF2', senal: '#F5B301', oxido: '#B3402A', taller: '#2E7D4F'},
-  fontFamily: {display: ['"Barlow Condensed"', 'Arial Narrow', 'sans-serif'], body: ['Barlow', 'system-ui', 'sans-serif']},
-}}}
-</script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-body {font-family: Barlow, system-ui, sans-serif;}
-.font-display, h1, h2 {font-family: "Barlow Condensed", "Arial Narrow", sans-serif; letter-spacing: .01em;}
-.num {font-family: "Barlow Condensed", sans-serif; font-variant-numeric: tabular-nums;}
-.bg-slate-900 {background-color: #1B1E24 !important;}
-.hover\:bg-slate-700:hover {background-color: #3A4048 !important;}
-.cinta {background: repeating-linear-gradient(-45deg, #F5B301 0 14px, #1B1E24 14px 28px);}
-.nav-act {border-left: 4px solid #F5B301; background: #3A4048;}
-:focus-visible {outline: 3px solid #F5B301; outline-offset: 1px;}
-</style>
+<link rel="stylesheet" href="/css/app.css">
 {{-- Alpine lo provee Livewire v3: no cargar CDN aparte (duplicado rompe las acciones) --}}
 @livewireStyles
 </head>
@@ -38,6 +20,7 @@ body {font-family: Barlow, system-ui, sans-serif;}
 <div>
 <button @click="sub = sub === 'serv' ? null : 'serv'" class="w-full text-left px-3 py-2 rounded hover:bg-grafito-soft">🛠️ <span x-show="open">Servicio ▾</span></button>
 <div x-show="open && sub === 'serv'" class="ml-4 space-y-1">
+<a href="/proformas" class="block px-3 py-1 rounded hover:bg-grafito-soft {{ request()->is('proformas*') ? 'nav-act' : '' }}">Pro-formas</a>
 <a href="/servicios" class="block px-3 py-1 rounded hover:bg-grafito-soft {{ request()->is('servicios*') ? 'nav-act' : '' }}">Órdenes</a>
 <a href="/clientes" class="block px-3 py-1 rounded hover:bg-grafito-soft {{ request()->is('clientes*') ? 'nav-act' : '' }}">Clientes</a>
 <a href="/vehiculos" class="block px-3 py-1 rounded hover:bg-grafito-soft {{ request()->is('vehiculos*') ? 'nav-act' : '' }}">Vehículos</a>
@@ -48,10 +31,10 @@ body {font-family: Barlow, system-ui, sans-serif;}
 <div>
 <button @click="sub = sub === 'inv' ? null : 'inv'" class="w-full text-left px-3 py-2 rounded hover:bg-grafito-soft">📦 <span x-show="open">Inventario ▾</span></button>
 <div x-show="open && sub === 'inv'" class="ml-4 space-y-1">
-<a href="/productos" class="block px-3 py-1 rounded hover:bg-grafito-soft {{ request()->is('productos*') ? 'nav-act' : '' }}">Productos</a>
-<a href="/categorias" class="block px-3 py-1 rounded hover:bg-grafito-soft {{ request()->is('categorias*') ? 'nav-act' : '' }}">Categorías</a>
 <a href="/compras" class="block px-3 py-1 rounded hover:bg-grafito-soft {{ request()->is('compras*') ? 'nav-act' : '' }}">Compras</a>
 <a href="/proveedores" class="block px-3 py-1 rounded hover:bg-grafito-soft {{ request()->is('proveedores*') ? 'nav-act' : '' }}">Proveedores</a>
+<a href="/productos" class="block px-3 py-1 rounded hover:bg-grafito-soft {{ request()->is('productos*') ? 'nav-act' : '' }}">Productos</a>
+<a href="/categorias" class="block px-3 py-1 rounded hover:bg-grafito-soft {{ request()->is('categorias*') ? 'nav-act' : '' }}">Categorías</a>
 </div>
 </div>
 @endcanany
@@ -114,9 +97,23 @@ body {font-family: Barlow, system-ui, sans-serif;}
 </div>
 </div>
 </header>
-<main class="flex-1 p-4 max-w-7xl w-full">@yield('content')</main>
+<main class="flex-1 p-4 w-full">@yield('content')</main>
 </div>
 </div>
 @livewireScripts
+<script src="/vendor/sweetalert2/sweetalert2.all.min.js"></script>
+<script>
+function preguntar(titulo, detalle) {
+  return Swal.fire({title: titulo, text: detalle || '', icon: 'warning', showCancelButton: true, confirmButtonText: 'Sí, continuar', cancelButtonText: 'Cancelar', confirmButtonColor: '#1B1E24'}).then(r => r.isConfirmed);
+}
+function confirmarForm(ev, titulo, detalle) {
+  ev.preventDefault();
+  preguntar(titulo, detalle).then(ok => { if (ok) ev.target.submit(); });
+  return false;
+}
+async function confirmarLive(comp, metodo, params, titulo, detalle) {
+  if (await preguntar(titulo, detalle)) comp.call(metodo, ...(params || []));
+}
+</script>
 </body>
 </html>

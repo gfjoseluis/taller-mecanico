@@ -32,6 +32,11 @@ class CompraForm extends Component
     }
     public function addLinea() { $this->lineas[] = ['product_id' => null, 'cantidad' => 1, 'costo' => 0]; }
 
+    public function getTotalProperty(): float
+    {
+        return (float) collect($this->lineas)->sum(fn ($l) => (float) ($l['cantidad'] ?? 0) * (float) ($l['costo'] ?? 0));
+    }
+
     public function guardarProveedor(GuardarProveedorUseCase $guardar)
     {
         $this->validate(['s_nombre' => 'required|min:3']);
@@ -41,8 +46,20 @@ class CompraForm extends Component
     }
     public function guardar(RegistrarCompraUseCase $registrar)
     {
-        $this->validate(['supplier_id' => 'required|exists:suppliers,id']);
-        $registrar->ejecutar($this->supplier_id, $this->bank_account_id, $this->tipo_pago, $this->glosa, $this->lineas);
+        $this->validate([
+            'supplier_id' => 'required_if:tipo_pago,credito|nullable|exists:suppliers,id',
+            'tipo_pago' => 'required|in:contado,credito',
+        ]);
+        if (! $this->supplier_id && trim($this->glosa) === '') {
+            $this->addError('glosa', 'Sin proveedor, anota dónde compraste. Ej: ferretería El Puente.');
+            return;
+        }
+        try {
+            $registrar->ejecutar($this->supplier_id, $this->bank_account_id, $this->tipo_pago, $this->glosa, $this->lineas);
+        } catch (\DomainException $e) {
+            $this->addError('bank_account_id', $e->getMessage());
+            return;
+        }
         session()->flash("ok", 'Compra registrada, stock actualizado.'); $this->redirect('/compras', navigate: true); return;
     }
     public function render() { return view('livewire.compra-form'); }

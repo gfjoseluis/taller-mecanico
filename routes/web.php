@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\AuthController;
-use App\Infrastructure\Printing\DomPdfPrinter;
 use App\Models\BankAccount;
 use App\Models\Invoice;
 use Illuminate\Support\Facades\Route;
@@ -40,9 +39,31 @@ Route::middleware('auth')->group(function () {
     Route::get('/bancos/crear', fn () => view('form-page', ['comp' => 'bank-form', 'titulo' => 'Nueva cuenta']))->middleware('can:bancos.mover');
     Route::get('/bancos/{id}/editar', fn ($id) => view('form-page', ['comp' => 'bank-form', 'titulo' => 'Editar cuenta', 'id' => $id]))->middleware('can:bancos.mover');
     Route::get('/servicios/crear', fn () => view('form-page', ['comp' => 'servicio-form', 'titulo' => 'Nueva orden de servicio']))->middleware('can:ots.crear');
+    Route::get('/proformas', fn () => view('page', ['comp' => 'proforma-table']))->middleware('can:ots.ver')->name('proformas');
+    Route::get('/proformas/crear', fn () => view('form-page', ['comp' => 'proforma-form', 'titulo' => 'Nueva pro-forma']))->middleware('can:ots.crear');
+    Route::get('/proformas/{id}/editar', fn ($id) => view('form-page', ['comp' => 'proforma-form', 'titulo' => 'Editar pro-forma', 'id' => $id]))->middleware('can:ots.crear');
+    Route::post('/proformas/{id}/convertir', function (int $id, \App\Application\UseCases\ConvertirProformaUseCase $conv) {
+        try {
+            $ot = $conv->ejecutar($id);
+        } catch (\DomainException $e) {
+            return redirect('/proformas')->with('ok', $e->getMessage());
+        }
+        return redirect('/servicios/'.$ot->id)->with('ok', "OT {$ot->numero} creada desde pro-forma (stock descontado).");
+    })->middleware('can:ots.crear');
+    Route::get('/proformas/{id}', fn ($id) => view('form-page', ['comp' => 'proforma-show', 'titulo' => 'Detalle de pro-forma', 'id' => $id]))->middleware('can:ots.ver')->whereNumber('id');
+    Route::get('/proformas/{id}/imprimir', function (int $id, \App\Application\Lecturas\OrdenDetalleService $d, \App\Application\Services\SettingService $s) {
+        $p = \App\Models\Proforma::with(['client', 'vehicle', 'lineas.product'])->findOrFail($id);
+        return view('print.proforma', ['p' => $p, 'empresa' => $s->get('taller.empresa.nombre', 'Taller Alto Tonelaje'), 'diagnosticoBase' => $d->diagnosticoBase($p->diagnostico), 'grupos' => $d->gruposDe($p)]);
+    })->middleware('can:ots.ver');
     Route::get('/servicios/{id}/editar', fn ($id) => view('form-page', ['comp' => 'servicio-form', 'titulo' => 'Editar orden (abierta)', 'id' => $id]))->middleware('can:ots.crear');
-    Route::get('/servicios/{id}/cobrar', fn ($id) => view('form-page', ['comp' => 'cobro-form', 'titulo' => 'Cobrar y cerrar', 'id' => $id]))->middleware('can:ots.cerrar');
+    Route::get('/servicios/{id}/cobrar', fn ($id) => view('form-page', ['comp' => 'cobro-form', 'titulo' => 'Cobrar', 'id' => $id]))->middleware('can:ots.cerrar');
+    Route::get('/servicios/{id}/recepcion', fn ($id) => view('form-page', ['comp' => 'recepcion-form', 'titulo' => 'Recepción del vehículo', 'id' => $id]))->middleware('can:ots.crear');
+    Route::get('/servicios/{id}', fn ($id) => view('form-page', ['comp' => 'servicio-show', 'titulo' => 'Detalle de orden', 'id' => $id]))->middleware('can:ots.ver')->whereNumber('id');
     Route::get('/compras/crear', fn () => view('form-page', ['comp' => 'compra-form', 'titulo' => 'Nueva compra']))->middleware('can:compras.crear');
+    Route::get('/compras/{id}', fn ($id) => view('form-page', ['comp' => 'compra-show', 'titulo' => 'Detalle de compra', 'id' => $id]))->middleware('can:compras.ver')->whereNumber('id');
+    Route::get('/compras/{id}/imprimir', function (int $id, \App\Application\Lecturas\CompraDetalleService $d, \App\Application\Services\SettingService $s) {
+        return view('print.compra', ['c' => $d->cargar($id), 'empresa' => $s->get('taller.empresa.nombre', 'Taller Alto Tonelaje')]);
+    })->middleware('can:compras.ver');
     Route::get('/usuarios/crear', fn () => view('form-page', ['comp' => 'user-form', 'titulo' => 'Nuevo usuario']))->middleware('can:config.editar');    Route::get('/usuarios/{id}/editar', fn ($id) => view('form-page', ['comp' => 'user-form', 'titulo' => 'Editar usuario', 'id' => $id]))->middleware('can:config.editar');
     Route::get('/roles/crear', fn () => view('form-page', ['comp' => 'role-form', 'titulo' => 'Nuevo rol']))->middleware('can:config.editar');
     Route::get('/roles/{id}/editar', fn ($id) => view('form-page', ['comp' => 'role-form', 'titulo' => 'Editar rol', 'id' => $id]))->middleware('can:config.editar');
@@ -105,26 +126,30 @@ Route::middleware('auth')->group(function () {
         $hasta = request('hasta', now()->toDateString());
         $datos = $rep->datos($seccion, $desde, $hasta);
         if (request('csv')) {
-            return response()->streamDownload(function () use ($rep, $datos, $seccion) {
+            $cab = $rep->columnas($seccion);
+            $filas = $rep->filas($seccion, $datos);
+            return response()->streamDownload(function () use ($cab, $filas, $seccion) {
                 $f = fopen('php://output', 'w');
-                fputcsv($f, ['reporte', $seccion, now()->toDateString()]);
-                foreach ($rep->filasCsv($seccion, $datos) as $r) fputcsv($f, $r);
+                fwrite($f, "\xEF\xBB\xBF"); // Excel español abre tildes y columnas
+                fputcsv($f, ['reporte', $seccion, now()->toDateString()], ';');
+                fputcsv($f, $cab, ';');
+                foreach ($filas as $r) fputcsv($f, $r, ';');
                 fclose($f);
-            }, "reporte-{$seccion}.csv", ['Content-Type' => 'text/csv']);
+            }, "reporte-{$seccion}.csv", ['Content-Type' => 'text/csv; charset=UTF-8']);
         }
         return view('reportes', compact('seccion', 'datos', 'desde', 'hasta'));
     })->middleware('can:reportes.ver')->name('reportes');
-    Route::get('/por-cobrar', fn (\App\Application\Lecturas\DeudasService $d) => view('por-cobrar', ['items' => $d->porCobrar()]))->middleware('can:ots.ver')->name('por-cobrar');
+    Route::get('/por-cobrar', fn (\App\Application\Lecturas\DeudasService $d) => view('por-cobrar', ['items' => $d->porCobrar(request('buscar'), (bool) request('mora'))]))->middleware('can:ots.ver')->name('por-cobrar');
     Route::get('/por-cobrar/{id}/abonar', fn ($id) => view('form-page', ['comp' => 'abono-form', 'titulo' => 'Abono de cliente', 'id' => $id]))->middleware('can:ots.cerrar');
-    Route::get('/por-pagar', fn (\App\Application\Lecturas\DeudasService $d) => view('por-pagar', ['items' => $d->porPagar()]))->middleware('can:compras.ver')->name('por-pagar');
+    Route::get('/por-pagar', fn (\App\Application\Lecturas\DeudasService $d) => view('por-pagar', ['items' => $d->porPagar(request('buscar'))]))->middleware('can:compras.ver')->name('por-pagar');
     Route::get('/por-pagar/{id}/abonar', fn ($id) => view('form-page', ['comp' => 'abono-proveedor-form', 'titulo' => 'Abono a importadora', 'id' => $id]))->middleware('can:compras.crear');
-    Route::get('/servicios/{id}/pdf', fn (int $id, DomPdfPrinter $p) => $p->comprobante('ot', $id))->middleware('can:ots.ver');
-    Route::get('/servicios/{id}/recibo', function (int $id) {
-        $ot = \App\Models\WorkOrder::with(['client', 'vehicle', 'ultimoPago'])->findOrFail($id);
-        return \Barryvdh\DomPDF\Facade\Pdf::loadView('print.recibo', ['ot' => $ot, 'pago' => $ot->ultimoPago])->stream("Recibo-{$ot->numero}.pdf");
+    Route::get('/servicios/{id}/imprimir', function (int $id, \App\Application\Lecturas\OrdenDetalleService $d, \App\Application\Services\SettingService $s) {
+        $ot = $d->cargar($id);
+        return view('print.orden', ['ot' => $ot, 'empresa' => $s->get('taller.empresa.nombre', 'Taller Alto Tonelaje'), 'diagnosticoBase' => $d->diagnosticoBase($ot->diagnostico), 'grupos' => $d->gruposDe($ot)]);
     })->middleware('can:ots.ver');
     Route::get('/respaldos', [\App\Http\Controllers\RespaldoController::class, 'index']);
     Route::post('/respaldos', [\App\Http\Controllers\RespaldoController::class, 'crear']);
+    Route::post('/respaldos/subir-restaurar', [\App\Http\Controllers\RespaldoController::class, 'subirYRestaurar']);
     Route::get('/respaldos/{nombre}/descargar', [\App\Http\Controllers\RespaldoController::class, 'descargar']);
     Route::delete('/respaldos/{nombre}/borrar', [\App\Http\Controllers\RespaldoController::class, 'borrar']);
     Route::post('/respaldos/{nombre}/restaurar', [\App\Http\Controllers\RespaldoController::class, 'restaurar']);

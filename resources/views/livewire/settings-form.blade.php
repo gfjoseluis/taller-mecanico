@@ -1,4 +1,4 @@
-<div class="bg-white p-4 rounded shadow max-w-2xl">
+<div class="bg-white p-4 rounded shadow w-full">
 @if(session('ok'))<p class="bg-green-100 p-2 rounded mb-2">{{ session('ok') }}</p>@endif
 <h2 class="font-bold mb-2">Configuración (gateway SIAT, impresoras, empresa)</h2>
 @foreach($form as $k => $v)<label class="block text-sm mt-2">{{ $k }}<input wire:model="form.{{ $k }}" class="border p-2 rounded w-full mt-1"></label>@endforeach

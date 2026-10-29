@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Entrar — Taller Alto Tonelaje</title><script src="https://cdn.tailwindcss.com"></script><link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet"><style>body{font-family:Barlow,system-ui,sans-serif}.font-display{font-family:"Barlow Condensed","Arial Narrow",sans-serif}.cinta{background:repeating-linear-gradient(-45deg,#F5B301 0 16px,#1B1E24 16px 32px)}:focus-visible{outline:3px solid #F5B301;outline-offset:1px}</style></head>
+<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Entrar — Taller Alto Tonelaje</title><link rel="stylesheet" href="/css/app.css"></head>
 <body class="bg-[#1B1E24] flex items-center justify-center min-h-screen p-4">
 <div class="w-full max-w-3xl grid md:grid-cols-2 rounded overflow-hidden shadow-2xl">
 <div class="bg-[#1B1E24] text-white p-8 flex flex-col justify-between">
